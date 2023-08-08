@@ -1,9 +1,5 @@
 @extends('layout.default')
 
-@section('title')
-    login
-@endsection
-
 
 @section('title')
     register

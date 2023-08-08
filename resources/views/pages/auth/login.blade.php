@@ -1,9 +1,5 @@
 @extends('layout.default')
 
-@section('title')
-    Login
-@endsection
-
 
 @section('title')
     Login

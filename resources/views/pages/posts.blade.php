@@ -11,4 +11,6 @@
             @include('components.postcard')
         @endforeach
     </div>
+
+    {{ $posts }}
 @endsection

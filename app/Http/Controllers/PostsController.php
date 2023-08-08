@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CreatePostMail;
+use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class PostsController extends Controller
 {
@@ -13,7 +16,7 @@ class PostsController extends Controller
      */
     public function index()
     {
-        $posts = Post::where('isPublished', true)->get();
+        $posts = Post::paginate(3);
         return view('pages.posts', compact('posts'));
     }
 
@@ -33,12 +36,14 @@ class PostsController extends Controller
             'body' => 'required|string|min:10|max:5000',
         ]);
 
-        Post::create([
+        $post = Post::create([
             'title' => $request->title,
             'body' => $request->body,
             'body' => $request->body,
             'user_id' => $user->id,
         ]);
+        $mailData = $post->only('title', 'body');
+        Mail::to($user->email)->send(new CreatePostMail($mailData));
 
         return redirect('createpost')->with('status', 'Post successfully created.');
     }
@@ -48,7 +53,10 @@ class PostsController extends Controller
      */
     public function show(string $id)
     {
-        $post = Post::findOrFail($id);
+        $post = Post::where('id', $id)
+            ->with('user')
+            ->first();
+        $post->comments = Comment::paginate(2);
         return view('pages.post', compact('post'));
     }
 
@@ -70,6 +78,9 @@ class PostsController extends Controller
 
     public function createPost()
     {
-        return view('pages.createpost');
+        if (Auth::check() && Auth::user()->isAdmin) {
+            return view('pages.createpost');
+        }
+        return redirect('/');
     }
 }

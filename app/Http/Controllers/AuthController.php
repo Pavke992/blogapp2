@@ -22,31 +22,24 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        if (Auth::check()) {
-            return redirect('/login')->withErrors('You are already logged in');
-        }
-
         $request->validate([
             'name' => 'required|min:2|max:32|string',
             'email' => 'required|unique:users,email',
-            'password' => 'required|string|min:5|max:255|confirmed',
+            'password' => 'required|min:5|max:255',
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
         ]);
 
-        return redirect('/login')->with('status', 'Account created. Please Login.');
+        redirect('/');
+        $this->login($request);
     }
 
     public function login(Request $request)
     {
-        if (Auth::check()) {
-            return redirect('/login')->withErrors('You are already logged in');
-        }
-
         $request->validate([
             'email' => 'required',
             'password' => 'required',
@@ -56,6 +49,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             return redirect('/')->with('status', 'Successfully logged in ');
         }
+
         return redirect('/login')->withErrors('Invalid credentials!');
     }
 
